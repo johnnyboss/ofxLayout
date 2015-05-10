@@ -28,6 +28,7 @@ void ofxLayout::init(int x, int y, int w, int h){
     contextTreeRoot.styles = styleRulesRoot;
     
     assets.addBatch(IMAGES_BATCH);
+    _hasTuioBind = false;
 }
 
 void ofxLayout::enableMouseEvents(){
@@ -35,7 +36,9 @@ void ofxLayout::enableMouseEvents(){
     ofAddListener(ofEvents().mousePressed, this, &ofxLayout::mousePressed);
     ofAddListener(ofEvents().mouseReleased, this, &ofxLayout::mouseReleased);
     ofAddListener(ofEvents().mouseDragged, this, &ofxLayout::mouseDragged);
+
 }
+
 
 void ofxLayout::disableMouseEvents(){
     ofRemoveListener(ofEvents().mouseMoved, this, &ofxLayout::mouseMoved);
@@ -43,6 +46,19 @@ void ofxLayout::disableMouseEvents(){
     ofRemoveListener(ofEvents().mouseReleased, this, &ofxLayout::mouseReleased);
     ofRemoveListener(ofEvents().mouseDragged, this, &ofxLayout::mouseDragged);
 }
+
+void ofxLayout::setTuioClient (ofxTuioClient * _tuioClient)
+{
+    tuioClient = _tuioClient;
+    // HELP with this in order to be independent from the main.
+    ofAddListener(tuioClient->cursorAdded,this,&ofxLayout::tuioPressed);
+    ofAddListener(tuioClient->cursorRemoved,this,&ofxLayout::tuioRemoved);
+    ofAddListener(tuioClient->cursorUpdated,this,&ofxLayout::tuioUpdated);
+    
+    _hasTuioBind = true;
+
+}
+
 
 map<string, ofxFontStash*>* ofxLayout::getFonts(){
     return &fonts;
@@ -78,6 +94,62 @@ void ofxLayout::setMouseTransformation(ofMatrix4x4 mouseTransformation){
     this->mouseTransformation = mouseTransformation;
 }
 
+void ofxLayout::mouseReleased(ofMouseEventArgs &args){
+    ofPoint mousePt = ofPoint(args)*mouseTransformation;
+     ofLogError() << "Point removed at " <<ofToString(mousePt);
+
+    ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
+    ofLogError() <<"Layout element mouse removed "<<mouseReleasedElement->getID()<<endl;
+
+    mouseReleasedElement->mouseReleased(args);
+    string evtStr = "mouseReleased";
+    ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
+}
+
+void ofxLayout::tuioRemoved(ofxTuioCursor &tuioCursor)
+{
+    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+
+    ofPoint mousePt = loc*mouseTransformation;
+    ofLogError() << "Point n" << tuioCursor.getSessionId() << " removed at " << mousePt << endl;
+
+    ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
+    ofLogError() <<"Layout element finger removed "<<mouseReleasedElement->getID()<<endl;
+    mouseReleasedElement->fingerReleased(loc);
+    string evtStr = "mouseReleased";
+    ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
+}
+
+void ofxLayout::mousePressed(ofMouseEventArgs &args){
+    ofLog()<<"Mouse Point"<<ofPoint(args)<<endl;
+    ofPoint mousePt = ofPoint(args)*mouseTransformation;
+    ofxLayoutElement* mousePressedElement = hittest(mousePt);
+    mousePressedElement->mousePressed(args);
+    string evtStr = "mousePressed";
+    ofNotifyEvent(mousePressedEvt, evtStr, mousePressedElement);
+}
+
+void ofxLayout::tuioPressed(ofxTuioCursor &tuioCursor)
+{
+    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+    cout << "Point n" << tuioCursor.getSessionId() << " add at " << loc << endl;
+    ofPoint mousePt = loc*mouseTransformation;
+    ofxLayoutElement* mousePressedElement = hittest(mousePt);
+    mousePressedElement->fingerPressed(loc);
+    string evtStr = "mousePressed";
+    ofNotifyEvent(mousePressedEvt, evtStr, mousePressedElement);
+    
+}
+void ofxLayout::mouseDragged(ofMouseEventArgs &args){
+    
+    ofPoint mousePt = ofPoint(args)*mouseTransformation;
+    ofxLayoutElement* mouseDraggedElement = hittest(mousePt);
+    mouseDraggedElement->mouseDragged(args);
+    string evtStr = "mouseDragged";
+    ofNotifyEvent(mouseDraggedEvt, evtStr, mouseDraggedElement);
+}
+
+
 void ofxLayout::mouseMoved(ofMouseEventArgs &args){
     ofPoint mousePt = ofPoint(args)*mouseTransformation;
     ofxLayoutElement* mouseMovedElement = hittest(mousePt);
@@ -86,26 +158,14 @@ void ofxLayout::mouseMoved(ofMouseEventArgs &args){
     ofNotifyEvent(mouseMovedEvt, evtStr, mouseMovedElement);
 }
 
-void ofxLayout::mouseReleased(ofMouseEventArgs &args){
-    ofPoint mousePt = ofPoint(args)*mouseTransformation;
-    ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
-    mouseReleasedElement->mouseReleased(args);
-    string evtStr = "mouseReleased";
-    ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
-}
+void ofxLayout::tuioUpdated(ofxTuioCursor &tuioCursor)
+{
+    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+    cout << "Point n" << tuioCursor.getSessionId() << " update at " << loc << endl;
 
-void ofxLayout::mousePressed(ofMouseEventArgs &args){
-    ofPoint mousePt = ofPoint(args)*mouseTransformation;
-    ofxLayoutElement* mousePressedElement = hittest(mousePt);
-    mousePressedElement->mousePressed(args);
-    string evtStr = "mousePressed";
-    ofNotifyEvent(mousePressedEvt, evtStr, mousePressedElement);
-}
-
-void ofxLayout::mouseDragged(ofMouseEventArgs &args){
-    ofPoint mousePt = ofPoint(args)*mouseTransformation;
+    ofPoint mousePt = ofPoint(loc)*mouseTransformation;
     ofxLayoutElement* mouseDraggedElement = hittest(mousePt);
-    mouseDraggedElement->mouseDragged(args);
+    mouseDraggedElement->fingerDragged(loc);
     string evtStr = "mouseDragged";
     ofNotifyEvent(mouseDraggedEvt, evtStr, mouseDraggedElement);
 }

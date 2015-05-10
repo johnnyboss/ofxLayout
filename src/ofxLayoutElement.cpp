@@ -16,6 +16,7 @@ ofxLayoutElement::ofxLayoutElement(){
     styles.setDefaults();
     mouseState = MOUSE_STATE::NONE;
     stateLocked = false;
+    hasBlueMarker = false;
 }
 
 ofxLayoutElement::~ofxLayoutElement(){
@@ -41,10 +42,26 @@ void ofxLayoutElement::mouseMoved(ofMouseEventArgs &args){
 
 void ofxLayoutElement::mouseReleased(ofMouseEventArgs &args){
     mouseDraggedPt.set(ofPoint());
+    ofLogError()<<"On element mouse "<<args;
     mouseReleasedPt = getLocalPoint(args);
+    ofLogError()<<"On element mouse"<<mouseReleasedPt<<endl;
     string evtStr = "mouseReleased";
     ofNotifyEvent(mouseReleasedEvt, evtStr, this);
 }
+
+void ofxLayoutElement::fingerReleased(ofPoint _finger)
+{
+    ofLogError()<<"On element mouse "<<_finger;
+
+    mouseDraggedPt.set(ofPoint());
+    mouseReleasedPt = getLocalPoint(_finger);
+    ofLogError()<<"On element finger "<<mouseReleasedPt<<endl;
+
+    string evtStr = "mouseReleased";
+    ofNotifyEvent(mouseReleasedEvt, evtStr, this);
+
+}
+
 
 void ofxLayoutElement::mousePressed(ofMouseEventArgs &args){
     mousePressedPt = getLocalPoint(args);
@@ -52,13 +69,32 @@ void ofxLayoutElement::mousePressed(ofMouseEventArgs &args){
     ofNotifyEvent(mousePressedEvt, evtStr, this);
 }
 
+void ofxLayoutElement::fingerPressed(ofPoint _finger)
+{
+    mousePressedPt = getLocalPoint(_finger);
+    string evtStr = "mousePressed";
+    ofNotifyEvent(mousePressedEvt, evtStr, this);
+}
+
+
 void ofxLayoutElement::mouseDragged(ofMouseEventArgs &args){
     mouseDraggedPt = getLocalPoint(args);
     string evtStr = "mouseDragged";
     ofNotifyEvent(mouseDraggedEvt, evtStr, this);
 }
 
+void ofxLayoutElement::fingerDragged(ofPoint _finger){
+    mouseDraggedPt = getLocalPoint(_finger);
+    string evtStr = "mouseDragged";
+    ofNotifyEvent(mouseDraggedEvt, evtStr, this);
+    mouseMovedPt = getLocalPoint(_finger);
+    string evtStr2 = "mouseMoved";
+    ofNotifyEvent(mouseMovedEvt, evtStr2, this);
+
+}
+
 ofPoint ofxLayoutElement::getLocalPoint(ofPoint pt){
+
     ofMatrix4x4 mat = layout->getMouseTransformation();
     ofPoint gp = getGlobalPosition();
     return pt*mat-gp;
@@ -480,6 +516,8 @@ void ofxLayoutElement::drawContent(){
     drawBackground();
     drawShape();
     drawText();
+    if(hasBlueMarker)
+        drawBlueMarker();
 }
 
 /// |   Setters/Getters   | ///
@@ -638,6 +676,37 @@ void ofxLayoutElement::drawShape(){
         shape->draw();
         ofPopStyle();
     }
+}
+
+void ofxLayoutElement::setupMarker()
+{
+    hasBlueMarker = true;
+    blue.set(39,170,225,255);
+    radius_min = 10;
+    radius_max = 50;
+    radius = radius_min;
+    blueMarkerPt = ofPoint(0,0);
+}
+
+void ofxLayoutElement::updateBlueMarker(ofPoint pt)
+{
+    blueMarkerPt = pt;
+}
+void ofxLayoutElement::drawBlueMarker()
+{
+    radius++;
+    if(radius > radius_max)
+        radius = radius_min;
+    
+    ofColor test;
+    test.set(blue);
+    test.a = (float)((radius_max - radius)/(70.0))*255;
+    ofSetColor(test);
+    ofCircle(blueMarkerPt, radius);
+    ofSetColor(blue);
+    ofCircle(blueMarkerPt, radius_min);
+    ofSetColor(255,255,255,255);
+    
 }
 
 void ofxLayoutElement::drawBorder(){

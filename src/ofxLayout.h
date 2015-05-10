@@ -6,6 +6,7 @@
 #include "ofxFontStash.h"
 #include "ofShader.h"
 #include "ofxMultiFboBlur.h"
+#include "ofxTuio.h"
 
 const string IMAGES_BATCH = "images";
 class ofxLayout{
@@ -76,6 +77,12 @@ public:
     void mousePressed(ofMouseEventArgs& args);
     void mouseReleased(ofMouseEventArgs& args);
     void mouseDragged(ofMouseEventArgs& args);
+    
+    void tuioPressed(ofxTuioCursor &tuioCursor);
+    void tuioRemoved(ofxTuioCursor &tuioCursor);
+    void tuioUpdated(ofxTuioCursor &tuioCursor);
+
+    
     ofEvent<string> mouseMovedEvt;
     ofEvent<string> mouseReleasedEvt;
     ofEvent<string> mousePressedEvt;
@@ -102,6 +109,12 @@ public:
     void populateXML(ofxXmlSettings* xml);
     void populateJSON(ofxJSONElement* json);
     void updateAssets(ofxLayoutElement* element);
+    
+
+    ofxTuioClient * tuioClient;
+    void	setTuioClient (ofxTuioClient * _tuioClient);
+    bool _hasTuioBind;
+    
 protected:
     ofxLayoutElement contextTreeRoot;
     ofxOSS styleRulesRoot;
