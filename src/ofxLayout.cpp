@@ -96,11 +96,7 @@ void ofxLayout::setMouseTransformation(ofMatrix4x4 mouseTransformation){
 
 void ofxLayout::mouseReleased(ofMouseEventArgs &args){
     ofPoint mousePt = ofPoint(args)*mouseTransformation;
-     ofLogError() << "Point removed at " <<ofToString(mousePt);
-
     ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
-    ofLogError() <<"Layout element mouse removed "<<mouseReleasedElement->getID()<<endl;
-
     mouseReleasedElement->mouseReleased(args);
     string evtStr = "mouseReleased";
     ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
@@ -108,20 +104,18 @@ void ofxLayout::mouseReleased(ofMouseEventArgs &args){
 
 void ofxLayout::tuioRemoved(ofxTuioCursor &tuioCursor)
 {
-    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
-
-    ofPoint mousePt = loc*mouseTransformation;
-    ofLogError() << "Point n" << tuioCursor.getSessionId() << " removed at " << mousePt << endl;
-
-    ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
-    ofLogError() <<"Layout element finger removed "<<mouseReleasedElement->getID()<<endl;
-    mouseReleasedElement->fingerReleased(loc);
-    string evtStr = "mouseReleased";
-    ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
+    if(tuioCursor.getFingerId() == 0)
+    {
+        ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+        ofPoint mousePt = loc*mouseTransformation;
+        ofxLayoutElement* mouseReleasedElement = hittest(mousePt);
+        mouseReleasedElement->fingerReleased(loc);
+        string evtStr = "mouseReleased";
+        ofNotifyEvent(mouseReleasedEvt, evtStr, mouseReleasedElement);
+    }
 }
 
 void ofxLayout::mousePressed(ofMouseEventArgs &args){
-    ofLog()<<"Mouse Point"<<ofPoint(args)<<endl;
     ofPoint mousePt = ofPoint(args)*mouseTransformation;
     ofxLayoutElement* mousePressedElement = hittest(mousePt);
     mousePressedElement->mousePressed(args);
@@ -131,13 +125,15 @@ void ofxLayout::mousePressed(ofMouseEventArgs &args){
 
 void ofxLayout::tuioPressed(ofxTuioCursor &tuioCursor)
 {
-    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
-    cout << "Point n" << tuioCursor.getSessionId() << " add at " << loc << endl;
-    ofPoint mousePt = loc*mouseTransformation;
-    ofxLayoutElement* mousePressedElement = hittest(mousePt);
-    mousePressedElement->fingerPressed(loc);
-    string evtStr = "mousePressed";
-    ofNotifyEvent(mousePressedEvt, evtStr, mousePressedElement);
+    if(tuioCursor.getFingerId() == 0)
+    {
+        ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+        ofPoint mousePt = loc*mouseTransformation;
+        ofxLayoutElement* mousePressedElement = hittest(mousePt);
+        mousePressedElement->fingerPressed(loc);
+        string evtStr = "mousePressed";
+        ofNotifyEvent(mousePressedEvt, evtStr, mousePressedElement);
+    }
     
 }
 void ofxLayout::mouseDragged(ofMouseEventArgs &args){
@@ -160,14 +156,15 @@ void ofxLayout::mouseMoved(ofMouseEventArgs &args){
 
 void ofxLayout::tuioUpdated(ofxTuioCursor &tuioCursor)
 {
-    ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
-    cout << "Point n" << tuioCursor.getSessionId() << " update at " << loc << endl;
-
-    ofPoint mousePt = ofPoint(loc)*mouseTransformation;
-    ofxLayoutElement* mouseDraggedElement = hittest(mousePt);
-    mouseDraggedElement->fingerDragged(loc);
-    string evtStr = "mouseDragged";
-    ofNotifyEvent(mouseDraggedEvt, evtStr, mouseDraggedElement);
+    if(tuioCursor.getFingerId() == 0)
+    {
+        ofPoint loc = ofPoint(tuioCursor.getX()*ofGetWidth(),tuioCursor.getY()*ofGetHeight());
+        ofPoint mousePt = ofPoint(loc)*mouseTransformation;
+        ofxLayoutElement* mouseDraggedElement = hittest(mousePt);
+        mouseDraggedElement->fingerDragged(loc);
+        string evtStr = "mouseDragged";
+        ofNotifyEvent(mouseDraggedEvt, evtStr, mouseDraggedElement);
+    }
 }
 
 ofMatrix4x4 ofxLayout::getMouseTransformation(){

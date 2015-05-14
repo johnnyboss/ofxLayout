@@ -4,7 +4,7 @@
 /// |   Constructor/Destructor   | ///
 /// | -------------------------- | ///
 ofxLayoutElement::ofxLayoutElement(){
-//    stateTransitioning = false;
+    //    stateTransitioning = false;
     opacity = 1.0;
     shape = NULL;
     isSVG = false;
@@ -42,24 +42,17 @@ void ofxLayoutElement::mouseMoved(ofMouseEventArgs &args){
 
 void ofxLayoutElement::mouseReleased(ofMouseEventArgs &args){
     mouseDraggedPt.set(ofPoint());
-    ofLogError()<<"On element mouse "<<args;
     mouseReleasedPt = getLocalPoint(args);
-    ofLogError()<<"On element mouse"<<mouseReleasedPt<<endl;
     string evtStr = "mouseReleased";
     ofNotifyEvent(mouseReleasedEvt, evtStr, this);
 }
 
 void ofxLayoutElement::fingerReleased(ofPoint _finger)
 {
-    ofLogError()<<"On element mouse "<<_finger;
-
     mouseDraggedPt.set(ofPoint());
     mouseReleasedPt = getLocalPoint(_finger);
-    ofLogError()<<"On element finger "<<mouseReleasedPt<<endl;
-
     string evtStr = "mouseReleased";
     ofNotifyEvent(mouseReleasedEvt, evtStr, this);
-
 }
 
 
@@ -90,11 +83,11 @@ void ofxLayoutElement::fingerDragged(ofPoint _finger){
     mouseMovedPt = getLocalPoint(_finger);
     string evtStr2 = "mouseMoved";
     ofNotifyEvent(mouseMovedEvt, evtStr2, this);
-
+    
 }
 
 ofPoint ofxLayoutElement::getLocalPoint(ofPoint pt){
-
+    
     ofMatrix4x4 mat = layout->getMouseTransformation();
     ofPoint gp = getGlobalPosition();
     return pt*mat-gp;
@@ -149,7 +142,7 @@ void ofxLayoutElement::show(){
     else{
         styles.setStyle(OSS_KEY::DISPLAY, OSS_VALUE::BLOCK);
     }
-
+    
 }
 
 void ofxLayoutElement::hide(){
@@ -202,7 +195,7 @@ void ofxLayoutElement::update(){
     
     bool isWidthAuto = getStyle(OSS_KEY::WIDTH)->asOssValue() == OSS_VALUE::AUTO;
     bool isHeightAuto = getStyle(OSS_KEY::HEIGHT)->asOssValue() == OSS_VALUE::AUTO;
-
+    
     float minWidth = 0;
     if(hasStyle(OSS_KEY::MIN_WIDTH)){
         minWidth = getStyle(OSS_KEY::MIN_WIDTH)->asFloat();
@@ -272,7 +265,7 @@ void ofxLayoutElement::update(){
         
         maxExpandedWidth = max(maxExpandedWidth, bW);
         maxExpandedWidth = max(expandingWidth,maxExpandedWidth);
- 
+        
         // Setting child position
         ofPoint childPos = ofPoint(relX+mL,relY+mT);
         child->setPosition(childPos);
@@ -298,7 +291,7 @@ void ofxLayoutElement::update(){
         else if(!children.empty()){
             dimensions.height = childrenHeight;
         }
-
+        
     }
     else if(hasParent() && getStyle(OSS_KEY::HEIGHT)->getType() == OSS_TYPE::PERCENT){
         float percentHeight = getStyle(OSS_KEY::HEIGHT)->asFloat()/100.0f;
@@ -330,7 +323,6 @@ void ofxLayoutElement::update(){
             containingDimensions = getDimensions();
         }
         
-        
         if(children[i]->getStyle(OSS_KEY::TOP)->getType() == OSS_TYPE::PERCENT){
             float percentTop = children[i]->getStyle(OSS_KEY::TOP)->asFloat()/100.0f;
             offset.y = percentTop * containingDimensions.getHeight();
@@ -347,6 +339,7 @@ void ofxLayoutElement::update(){
         }
         // Fixed size (px)
         else if(children[i]->getStyle(OSS_KEY::BOTTOM)->getType() == OSS_TYPE::NUMBER){
+            
             offset.y = containingDimensions.getHeight() - children[i]->getHeight() - children[i]->getStyle(OSS_KEY::BOTTOM)->asFloat();
         }
         
@@ -358,7 +351,7 @@ void ofxLayoutElement::update(){
         else if(children[i]->getStyle(OSS_KEY::LEFT)->getType() == OSS_TYPE::NUMBER){
             offset.x = children[i]->getStyle(OSS_KEY::LEFT)->asFloat();
         }
-
+        
         if(children[i]->getStyle(OSS_KEY::RIGHT)->getType() == OSS_TYPE::PERCENT){
             // Inverse
             float percentTop = 1.0f-(children[i]->getStyle(OSS_KEY::RIGHT)->asFloat()/100.0f);
@@ -390,7 +383,7 @@ void ofxLayoutElement::update(){
             default:
                 childPos = relativePos+offset;
         }
-    
+        
         children[i]->setPosition(childPos);
     }
 }
@@ -416,7 +409,7 @@ void ofxLayoutElement::draw(ofFbo* fbo){
     if(visible()){
         ofPushStyle();
         ofPushMatrix();
-
+        
         updateGlobalTransformations();
         
         ofTranslate(getPosition());
@@ -431,7 +424,7 @@ void ofxLayoutElement::draw(ofFbo* fbo){
         if(hasStyle(OSS_KEY::BORDER_WIDTH)){
             setBorders(getFloatStyle(OSS_KEY::BORDER_WIDTH));
         }
-
+        
         if(hasStyle(OSS_KEY::OSS_OVERFLOW) && getOssValueStyle(OSS_KEY::OSS_OVERFLOW) == OSS_VALUE::HIDDEN){
             glPushAttrib(GL_SCISSOR_BIT);
             glEnable(GL_SCISSOR_TEST);
@@ -441,7 +434,7 @@ void ofxLayoutElement::draw(ofFbo* fbo){
         }
         
         
-
+        
         if(hasStyle(OSS_KEY::OPACITY)){
             opacity *= getStyle(OSS_KEY::OPACITY)->asFloat();
         }
@@ -477,7 +470,7 @@ void ofxLayoutElement::draw(ofFbo* fbo){
         
         
         ofPopStyle();
-
+        
         for(int i = 0 ; i < children.size(); i++){
             children[i]->setOpacity(opacity);
             children[i]->draw();
@@ -485,7 +478,7 @@ void ofxLayoutElement::draw(ofFbo* fbo){
         
         
         if(overlayFbo.isAllocated()){
-
+            
             ofPushStyle();
             ofSetColor(255*opacity);
             overlayFbo.draw(0,0);
@@ -728,7 +721,7 @@ void ofxLayoutElement::drawBorder(){
     if(hasStyle(OSS_KEY::BORDER_COLOR)){
         borderColor = getColorStyle(OSS_KEY::BORDER_COLOR);
         borderColor.a *= opacity;
-
+        
         ofSetColor(borderColor);
     }
     ofFill();
@@ -737,7 +730,7 @@ void ofxLayoutElement::drawBorder(){
     ofDrawRectangle( rect.x+bw, rect.y,rect.width-2*bw,bw);
     ofDrawRectangle( rect.x+bw, rect.y+rect.height-bw,rect.width-2*bw,bw);
     ofPopStyle();
-
+    
 }
 
 void ofxLayoutElement::drawBackground(){
@@ -788,7 +781,6 @@ void ofxLayoutElement::beginBackgroundSize(){
     float yTrans = (getHeight()-bgHeight*scale)/2;
     ofTranslate(xTrans, yTrans);
     ofScale(scale, scale, 1.0);
-
 }
 
 void ofxLayoutElement::endBackgroundSize(){
@@ -797,7 +789,7 @@ void ofxLayoutElement::endBackgroundSize(){
 
 void ofxLayoutElement::updateText(){
     if(hasStyle(OSS_KEY::FONT_FAMILY)){
-
+        
         // FONTNAME
         {
             fontData.fontFilename = getStringStyle(OSS_KEY::FONT_FAMILY);
@@ -834,8 +826,8 @@ void ofxLayoutElement::updateText(){
         }
         
         // FONT SIZE
-//        bool updateFontSize =
-//            getStyle(OSS_KEY::FONT_SIZE)->getType() == OSS_K
+        //        bool updateFontSize =
+        //            getStyle(OSS_KEY::FONT_SIZE)->getType() == OSS_K
         {
             int fontSize;
             bool fitText = false;
@@ -933,10 +925,10 @@ void ofxLayoutElement::drawText(){
                     y = 0;
                 }
                 else if(verticalAlign == "center"){
-                    y = dimensions.height/2-fontData.fontHeight/2;
+                    y = dimensions.height/2-fontData.drawBox.height/2;
                 }
                 else if(verticalAlign == "bottom"){
-                    y = dimensions.height-fontData.fontHeight*1.05f;
+                    y = dimensions.height-fontData.drawBox.height*1.05f;
                 }
             }
             ofFill();
@@ -992,6 +984,8 @@ void ofxLayoutElement::beginOverlay(){
         fboS.width = getWidth();
         fboS.height = getHeight();
         fboS.internalformat = GL_RGBA;
+        fboS.minFilter = GL_LINEAR;
+        fboS.maxFilter = GL_LINEAR;
         fboS.numSamples = 4;
         overlayFbo.allocate(fboS);
     }
@@ -1145,7 +1139,20 @@ void ofxLayoutElement::drawBackgroundColor(){
         color.a *= opacity;
         ofSetColor(color);
         ofFill();
-        ofDrawRectangle(0,0,dimensions.width,dimensions.height);
+        if(getFloatStyle(OSS_KEY::BORDER_RADIUS) > 0.0){
+            float r = 0.0;
+            if(getStyle(OSS_KEY::BORDER_RADIUS)->getType() == OSS_TYPE::PERCENT){
+                r = (getFloatStyle(OSS_KEY::BORDER_RADIUS)/100.0)*min(getWidth(),getHeight());
+            }
+            else{
+                r = getFloatStyle(OSS_KEY::BORDER_RADIUS);
+            }
+            ofSetCircleResolution(100);
+            ofDrawRectRounded(0, 0, getWidth(), getHeight(), r);
+        }
+        else{
+            ofDrawRectangle(0,0,dimensions.width,dimensions.height);
+        }
     }
     ofPopStyle();
 }
@@ -1295,7 +1302,7 @@ void ofxLayoutElement::updateGlobalTransformations(){
 
 
 ofRectangle ofxLayoutElement::getGlobalClippingRegion(){
-
+    
     ofRectangle globalClippingRegion = getClippingRegion();
     if(hasParent()){
         globalClippingRegion.translate(parent->getGlobalPosition());
